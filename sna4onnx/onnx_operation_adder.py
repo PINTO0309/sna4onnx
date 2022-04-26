@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 import onnx
 import onnx_graphsurgeon as gs
 import numpy as np
-from typing import Optional
+from typing import Optional, List
 import sog4onnx
 
 class Color:
@@ -65,11 +65,10 @@ NUMPY_TYPES_TO_ONNX_DTYPES = {
 
 
 def add(
-    connection_src_op_name: str,
-    connection_src_op_output_name: str,
-    connection_dist_op_name: str,
-    connection_dist_op_input_name: str,
+    connection_src_op_output_names: List,
+    connection_dist_op_input_names: List,
     add_op_type: str,
+    add_op_name: str,
     add_op_input_variables: Optional[dict] = None,
     add_op_output_variables: Optional[dict] = None,
     add_op_attributes: Optional[dict] = None,
@@ -81,34 +80,38 @@ def add(
     """
     Parameters
     ----------
-    connection_src_op_name: str
-        Specify the name of the output OP from which to connect.\n\n\
-        e.g.\n\
-        [OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC]\n\
-        When extrapolating a new OP between OpA and OpB.\n\
-        --connection_src_op_name OpA
-
-    connection_src_op_output_name: str
+    connection_src_op_output_names: List
         Specify the name of the output name from which to connect.\n\n\
-        e.g. \n\
-        [OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC]\n\
+        e.g.\n\
+        -Before-\n\
+            [OpA] outnameA - inpnameB1 [OpB] outnameB\n\
+            [OpC] outnameC\n\
+        -After-\n\
+            [OpA] outnameA - inpname1 [AddOP1] outname1 - inpnameB1 [OpB] outnameB\n\
+            [OpC] outnameC - inpname2 [AddOP1]\n\
         When extrapolating a new OP between OpA and OpB.\n\
-        --connection_src_op_output_name outnameA\n\n\
+        connection_src_op_output_names = [\n\
+            "OpA", "outnameA",\n\
+            "AddOP1", "inpname1",\n\
+            "OpC", "outnameC",\n\
+            "AddOP1", "inpname2",\n\
+        ]\n\n\
         This need not be specified only when the type of the newly added OP is Constant.
 
-    connection_dist_op_name: str
-        Specify the name of the input OP from which to connect.\n\n\
+    connection_dist_op_input_names: List
+        Specify the name of the input name from which to connect.\n\n\
         e.g.\n\
-        [OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC]\n\
+        -Before-\n\
+            [OpA] outnameA - inpnameB1 [OpB] outnameB\n\
+            [OpC] outnameC\n\
+        -After-\n\
+            [OpA] outnameA - inpname1 [AddOP1] outname1 - inpnameB1 [OpB] outnameB\n\
+            [OpC] outnameC - inpname2 [AddOP1]\n\
         When extrapolating a new OP between OpA and OpB.\n\
-        --connection_dist_op_name OpB
-
-    connection_dist_op_input_name: str
-        Specify the name of the input name from which to connect.\n\
-        e.g.\n\n\
-        [OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC]\n\
-        When extrapolating a new OP between OpA and OpB.\n\
-        --connection_dist_op_input_name inpnameB
+        connection_dist_op_input_names = [\n\
+            "AddOP1", "outname1",\n\
+            "OpB", "inpnameB1",\n\
+        ]
 
     add_op_type: str
         ONNX op type.\n\
@@ -116,18 +119,32 @@ def add(
         e.g. "Add", "Div", "Gemm", ...\n\
         https://github.com/onnx/onnx/blob/main/docs/Operators.md
 
+    add_op_name: str
+        Name of OP to be added.\n\n\
+        e.g. --add_op_name AddOP1
+
     add_op_input_variables: Optional[dict]
         Specify input variables for the OP to be generated.\n\
         See below for the variables that can be specified.\n\n\
         {"input_var_name1": [numpy.dtype, shape], "input_var_name2": [dtype, shape], ...}\n\n\
-        e.g. add_op_input_variables = {"name1": [np.float32, [1,224,224,3]], "name2": [np.bool_, [0]], ...}\n\
+        e.g.\n\
+        add_op_input_variables = {\n\
+            "inpname1": [np.float32, [1,224,224,3]],\n\
+            "inpname2": [np.bool_, [0]],\n\
+            ...\n\
+        }\n\
         https://github.com/onnx/onnx/blob/main/docs/Operators.md
 
     add_op_output_variables: Optional[dict]
         Specify output variables for the OP to be generated.\n\
         See below for the variables that can be specified.\n\n\
         {"output_var_name1": [numpy.dtype, shape], "output_var_name2": [dtype, shape], ...}\n\n\
-        e.g. add_op_output_variables = {"name1": [np.float32, [1,224,224,3]], "name2": [np.bool_, [0]], ...}\n\
+        e.g.\n\
+        add_op_output_variables = {\n\
+            "outname1": [np.float32, [1,224,224,3]],\n\
+            "outname2": [np.bool_, [0]],\n\
+            ...\n\
+        }\n\
         https://github.com/onnx/onnx/blob/main/docs/Operators.md
 
     add_op_attributes: Optional[dict]
@@ -191,18 +208,43 @@ def add(
 
     # Generate an ONNX graph that holds only one OP
     single_op_graph = sog4onnx.generate(
-        op_type = add_op_type,
-        opset = opset,
-        input_variables = add_op_input_variables,
-        output_variables = add_op_output_variables,
-        attributes = add_op_attributes,
-        non_verbose = True,
+        op_type=add_op_type,
+        opset=opset,
+        op_name=add_op_name,
+        input_variables=add_op_input_variables,
+        output_variables=add_op_output_variables,
+        attributes=add_op_attributes,
+        non_verbose=True,
     )
+    single_op_graph_node = None
+    single_op_graph_node_inputs = None
+    single_op_graph_node_outputs = None
+    single_op_graph_node = single_op_graph.nodes[0]
+    if add_op_type not in ['Constant', 'ConstantOfShape']:
+        single_op_graph_node_inputs = single_op_graph_node.inputs
+    single_op_graph_node_outputs = single_op_graph_node.outputs
+
+    # Search for the output OPs of the connection source
+    src_ops = {}
+    for graph_node in graph.nodes:
+        if graph_node.name in connection_src_op_output_names:
+            src_ops[graph_node.name] = graph_node
+
+    # Search for the input OPs of the connection dist
+    dist_ops = {}
+    for graph_node in graph.nodes:
+        if graph_node.name in connection_dist_op_input_names:
+            dist_ops[graph_node.name] = graph_node
 
 
-    ###
-    ### Main Logic
-    ###
+
+    ######################################################## WIP
+    # Rewrite the output of the connection Gen OP
+    if single_op_graph_node_inputs:
+        pass
+    ######################################################## WIP
+
+
 
 
     # Shape Estimation
@@ -237,49 +279,6 @@ def main():
         required=True,
         help='Input onnx file path.'
     )
-    parser.add_argument(
-        '--connection_src_op_name',
-        type=str,
-        help=\
-            'Specify the name of the output OP from which to connect. \n'+
-            'e.g. \n'+
-            '[OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC] \n'+
-            'When extrapolating a new OP between OpA and OpB. \n'+
-            '--connection_src_op_name OpA'
-    )
-    parser.add_argument(
-        '--connection_src_op_output_name',
-        type=str,
-        help=\
-            'Specify the name of the output name from which to connect. \n'+
-            'e.g. \n'+
-            '[OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC] \n'+
-            'When extrapolating a new OP between OpA and OpB. \n'+
-            '--connection_src_op_output_name outnameA \n'+
-            'This need not be specified only when the type of the newly added OP is Constant.'
-    )
-    parser.add_argument(
-        '--connection_dist_op_name',
-        type=str,
-        required=True,
-        help=\
-            'Specify the name of the input OP from which to connect. \n'+
-            'e.g. \n'+
-            '[OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC] \n'+
-            'When extrapolating a new OP between OpA and OpB. \n'+
-            '--connection_dist_op_name OpB'
-    )
-    parser.add_argument(
-        '--connection_dist_op_input_name',
-        type=str,
-        required=True,
-        help=\
-            'Specify the name of the input name from which to connect. \n'+
-            'e.g. \n'+
-            '[OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC] \n'+
-            'When extrapolating a new OP between OpA and OpB. \n'+
-            '--connection_dist_op_input_name inpnameB'
-    )
     # https://github.com/onnx/onnx/blob/main/docs/Operators.md
     parser.add_argument(
         '--add_op_type',
@@ -291,18 +290,27 @@ def main():
             'https://github.com/onnx/onnx/blob/main/docs/Operators.md'
     )
     parser.add_argument(
+        '--add_op_name',
+        type=str,
+        required=True,
+        default='',
+        help=\
+            'Name of OP to be added. \n\n'+
+            'e.g. --add_op_name AddOP1'
+    )
+    parser.add_argument(
         '--add_op_input_variables',
         type=str,
         nargs=3,
         action='append',
         help=\
             'input_variables can be specified multiple times. \n'+
-            '--input_variables variable_name numpy.dtype shape \n'+
+            '--add_op_input_variables variable_name numpy.dtype shape \n'+
             'https://github.com/onnx/onnx/blob/main/docs/Operators.md \n\n'+
             'e.g.\n'+
-            '--input_variables i1 float32 [1,3,5,5] \n'+
-            '--input_variables i2 int32 [1] \n'+
-            '--input_variables i3 float64 [1,3,224,224]'
+            '--add_op_input_variables inpname1 float32 [1,3,5,5] \n'+
+            '--add_op_input_variables inpname2 int32 [1] \n'+
+            '--add_op_input_variables inpname3 float64 [1,3,224,224]'
     )
     parser.add_argument(
         '--add_op_output_variables',
@@ -311,12 +319,12 @@ def main():
         action='append',
         help=\
             'output_variables can be specified multiple times. \n'+
-            '--output_variables variable_name numpy.dtype shape \n'+
+            '--add_op_output_variables variable_name numpy.dtype shape \n'+
             'https://github.com/onnx/onnx/blob/main/docs/Operators.md \n\n'+
             'e.g.\n'+
-            '--output_variables o1 float32 [1,3,5,5] \n'+
-            '--output_variables o2 int32 [1] \n'+
-            '--output_variables o3 float64 [1,3,224,224]'
+            '--add_op_output_variables outname1 float32 [1,3,5,5] \n'+
+            '--add_op_output_variables outname2 int32 [1] \n'+
+            '--add_op_output_variables outname3 float64 [1,3,224,224]'
     )
     parser.add_argument(
         '--add_op_attributes',
@@ -324,14 +332,51 @@ def main():
         action='append',
         help=\
             'attributes can be specified multiple times. \n'+
-            '--attributes name dtype value \n'+
+            '--add_op_attributes name dtype value \n'+
             'dtype is one of "float32" or "float64" or "int32" or "int64" or "str". \n'+
             'https://github.com/onnx/onnx/blob/main/docs/Operators.md \n\n'+
             'e.g.\n'+
-            '--attributes alpha float32 1.0 \n'+
-            '--attributes beta float32 1.0 \n'+
-            '--attributes transA int64 0 \n'+
-            '--attributes transB int64 0'
+            '--add_op_attributes alpha float32 1.0 \n'+
+            '--add_op_attributes beta float32 1.0 \n'+
+            '--add_op_attributes transA int64 0 \n'+
+            '--add_op_attributes transB int64 0'
+    )
+    parser.add_argument(
+        '--connection_src_op_output_names',
+        type=str,
+        nargs=4,
+        action='append',
+        help=\
+            'Specify the name of the output name from which to connect. \n'+
+            'e.g. \n'+
+            '-Before- \n'+
+            '[OpA] outnameA - inpnameB1 [OpB] outnameB \n'+
+            '[OpC] outnameC \n'+
+            '-After- \n'+
+            '[OpA] outnameA - inpname1 [AddOP1] outname1 - inpnameB1 [OpB] outnameB \n'+
+            '[OpC] outnameC - inpname2 [AddOP1] \n'+
+            'When extrapolating a new OP between OpA and OpB. \n'+
+            '--connection_src_op_output_names OpA outnameA AddOP1 inpname1 \n'+
+            '--connection_src_op_output_names OpC outnameC AddOP1 inpname2 \n'+
+            'This need not be specified only when the type of the newly added OP is Constant.'
+    )
+    parser.add_argument(
+        '--connection_dist_op_input_names',
+        type=str,
+        required=True,
+        nargs=4,
+        action='append',
+        help=\
+            'Specify the name of the input name from which to connect. \n'+
+            'e.g. \n'+
+            '-Before- \n'+
+            '[OpA] outnameA - inpnameB1 [OpB] outnameB \n'+
+            '[OpC] outnameC \n'+
+            '-After- \n'+
+            '[OpA] outnameA - inpname1 [AddOP1] outname1 - inpnameB1 [OpB] outnameB \n'+
+            '[OpC] outnameC - inpname2 [AddOP1] \n'+
+            'When extrapolating a new OP between OpA and OpB. \n'+
+            '--connection_dist_op_input_names AddOP1 outname1 OpB inpnameB1'
     )
     parser.add_argument(
         '--output_onnx_file_path',
@@ -349,6 +394,27 @@ def main():
         help='Do not show all information logs. Only error logs are displayed.'
     )
     args = parser.parse_args()
+
+    add_op_type = args.add_op_type
+    add_op_name = args.add_op_name
+
+    # add src op names
+    """
+    connection_src_op_output_names = [
+        'src_op_name', 'src_op_output_name',
+        'add_op_name', 'add_op_input_name',
+    ]
+    """
+    connection_src_op_output_names = args.connection_src_op_output_names
+
+    # add dist op names
+    """
+    connection_dist_op_input_names = [
+        'add_op_name', 'add_op_output_name',
+        'dist_op_name', 'dist_op_input_name',
+    ]
+    """
+    connection_dist_op_input_names = args.connection_dist_op_input_names
 
     # add op input variables
     """
@@ -413,6 +479,8 @@ def main():
     else:
         output_onnx_file_path = f'{os.path.splitext(args.input_onnx_file_path)[0]}_mod.onnx'
 
+    non_verbose = args.non_verbose
+
     # Load
     onnx_graph = onnx.load(args.input_onnx_file_path)
 
@@ -420,16 +488,15 @@ def main():
     changed_graph = add(
         input_onnx_file_path=None,
         onnx_graph=onnx_graph,
-        connection_src_op_name=args.connection_src_op_name,
-        connection_src_op_output_name=args.connection_src_op_output_name,
-        connection_dist_op_name=args.connection_dist_op_name,
-        connection_dist_op_input_name=args.connection_dist_op_input_name,
-        add_op_type=args.add_op_type,
+        connection_src_op_output_names=connection_src_op_output_names,
+        connection_dist_op_input_names=connection_dist_op_input_names,
+        add_op_type=add_op_type,
+        add_op_name=add_op_name,
         add_op_input_variables=input_variables_tmp,
         add_op_output_variables=output_variables_tmp,
         add_op_attributes=attributes_tmp,
         output_onnx_file_path=output_onnx_file_path,
-        non_verbose=args.non_verbose,
+        non_verbose=non_verbose,
     )
 
 
