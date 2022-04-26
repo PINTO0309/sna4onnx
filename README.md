@@ -100,22 +100,22 @@ optional arguments:
       Specify the name of the output name from which to connect.
       e.g.
       -Before-
-        [OpA] outnameA - inpnameB1 [OpB] outnameB [OpC] outnameC
+        [OpA] onameA - inameB1 [OpB] onameB [OpC] onameC
       -After-
-        [OpA] outnameA - inpname1 [AddOP1] outname1 - inpnameB1 [OpB] outnameB [OpC] outnameC - inpname2 [AddOP1]
+        [OpA] onameA - iname1 [AddOP1] oname1 - inameB1 [OpB] onameB [OpC] onameC - iname2 [AddOP1]
 
       When extrapolating a new OP between OpA and OpB.
-      --connection_src_op_output_names OpA outnameA AddOP1 inpname1
-      --connection_src_op_output_names OpC outnameC AddOP1 inpname2
+      --connection_src_op_output_names OpA onameA AddOP1 iname1
+      --connection_src_op_output_names OpC onameC AddOP1 iname2
       This need not be specified only when the type of the newly added OP is Constant.
 
   --connection_dest_op_input_names ADDOP_NAME ADDOP_OUTPUT_NAME DESTOP_NAME DESTOP_INPUT_NAME
       Specify the name of the input name from which to connect.
       e.g.
       -Before-
-        [OpA] outnameA - inpnameB1 [OpB] outnameB [OpC] outnameC
+        [OpA] onameA - inameB1 [OpB] onameB [OpC] onameC
       -After-
-        [OpA] outnameA - inpname1 [AddOP1] outname1 - inpnameB1 [OpB] outnameB [OpC] outnameC - inpname2 [AddOP1]
+        [OpA] onameA - iname1 [AddOP1] oname1 - inameB1 [OpB] onameB [OpC] onameC - iname2 [AddOP1]
 
       When extrapolating a new OP between OpA and OpB.
       --connection_dest_op_input_names AddOP1 outname1 OpB inpnameB1
