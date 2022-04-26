@@ -66,7 +66,9 @@ NUMPY_TYPES_TO_ONNX_DTYPES = {
 
 def add(
     connection_src_op_name: str,
+    connection_src_op_output_name: str,
     connection_dist_op_name: str,
+    connection_dist_op_input_name: str,
     add_op_type: str,
     add_op_input_variables: Optional[dict] = None,
     add_op_output_variables: Optional[dict] = None,
@@ -81,18 +83,32 @@ def add(
     ----------
     connection_src_op_name: str
         Specify the name of the output OP from which to connect.\n\n\
+        e.g.\n\
+        [OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC]\n\
+        When extrapolating a new OP between OpA and OpB.\n\
+        --connection_src_op_name OpA
+
+    connection_src_op_output_name: str
+        Specify the name of the output name from which to connect.\n\n\
         e.g. \n\
         [OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC]\n\
         When extrapolating a new OP between OpA and OpB.\n\
-        --connection_src_op_name outnameA\n\n\
+        --connection_src_op_output_name outnameA\n\n\
         This need not be specified only when the type of the newly added OP is Constant.
 
     connection_dist_op_name: str
-        Specify the name of the output OP from which to connect.\n\
+        Specify the name of the input OP from which to connect.\n\n\
+        e.g.\n\
+        [OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC]\n\
+        When extrapolating a new OP between OpA and OpB.\n\
+        --connection_src_op_name OpB
+
+    connection_dist_op_input_name: str
+        Specify the name of the input name from which to connect.\n\
         e.g.\n\n\
         [OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC]\n\
         When extrapolating a new OP between OpA and OpB.\n\
-        --connection_dist_op_name inpnameB
+        --connection_dist_op_input_name inpnameB
 
     add_op_type: str
         ONNX op type.\n\
@@ -229,7 +245,17 @@ def main():
             'e.g. \n'+
             '[OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC] \n'+
             'When extrapolating a new OP between OpA and OpB. \n'+
-            '--connection_src_op_name outnameA \n'+
+            '--connection_src_op_name OpA'
+    )
+    parser.add_argument(
+        '--connection_src_op_output_name',
+        type=str,
+        help=\
+            'Specify the name of the output name from which to connect. \n'+
+            'e.g. \n'+
+            '[OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC] \n'+
+            'When extrapolating a new OP between OpA and OpB. \n'+
+            '--connection_src_op_output_name outnameA \n'+
             'This need not be specified only when the type of the newly added OP is Constant.'
     )
     parser.add_argument(
@@ -237,11 +263,22 @@ def main():
         type=str,
         required=True,
         help=\
-            'Specify the name of the output OP from which to connect. \n'+
+            'Specify the name of the input OP from which to connect. \n'+
             'e.g. \n'+
             '[OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC] \n'+
             'When extrapolating a new OP between OpA and OpB. \n'+
-            '--connection_dist_op_name inpnameB'
+            '--connection_dist_op_name OpB'
+    )
+    parser.add_argument(
+        '--connection_dist_op_input_name',
+        type=str,
+        required=True,
+        help=\
+            'Specify the name of the input name from which to connect. \n'+
+            'e.g. \n'+
+            '[OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC] \n'+
+            'When extrapolating a new OP between OpA and OpB. \n'+
+            '--connection_dist_op_input_name inpnameB'
     )
     # https://github.com/onnx/onnx/blob/main/docs/Operators.md
     parser.add_argument(
@@ -384,7 +421,9 @@ def main():
         input_onnx_file_path=None,
         onnx_graph=onnx_graph,
         connection_src_op_name=args.connection_src_op_name,
+        connection_src_op_output_name=args.connection_src_op_output_name,
         connection_dist_op_name=args.connection_dist_op_name,
+        connection_dist_op_input_name=args.connection_dist_op_input_name,
         add_op_type=args.add_op_type,
         add_op_input_variables=input_variables_tmp,
         add_op_output_variables=output_variables_tmp,
