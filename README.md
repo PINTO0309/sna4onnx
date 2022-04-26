@@ -62,7 +62,8 @@ optional arguments:
       Input onnx file path.
 
   --add_op_type ADD_OP_TYPE
-      ONNX OP type. https://github.com/onnx/onnx/blob/main/docs/Operators.md
+      ONNX OP type.
+      https://github.com/onnx/onnx/blob/main/docs/Operators.md
 
   --add_op_name ADD_OP_NAME
       Name of OP to be added.
