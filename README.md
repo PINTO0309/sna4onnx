@@ -333,3 +333,12 @@ onnx_graph = add(
 ### After
 ![aaa](https://user-images.githubusercontent.com/33194443/165337249-eaf92683-c42b-44f8-acb5-8542bc9472c4.png)
 
+## 7. Reference
+1. https://github.com/onnx/onnx/blob/main/docs/Operators.md
+2. https://docs.nvidia.com/deeplearning/tensorrt/onnx-graphsurgeon/docs/index.html
+3. https://github.com/NVIDIA/TensorRT/tree/main/tools/onnx-graphsurgeon
+4. https://github.com/PINTO0309/simple-onnx-processing-tools
+5. https://github.com/PINTO0309/PINTO_model_zoo
+
+## 8. Issues
+https://github.com/PINTO0309/simple-onnx-processing-tools/issues
