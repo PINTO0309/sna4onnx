@@ -2,7 +2,6 @@
 
 import os
 import sys
-import traceback
 from argparse import ArgumentParser
 import onnx
 import onnx_graphsurgeon as gs
@@ -66,7 +65,7 @@ NUMPY_TYPES_TO_ONNX_DTYPES = {
 
 def add(
     connection_src_op_output_names: List,
-    connection_dist_op_input_names: List,
+    connection_dest_op_input_names: List,
     add_op_type: str,
     add_op_name: str,
     add_op_input_variables: Optional[dict] = None,
@@ -91,14 +90,12 @@ def add(
             [OpC] outnameC - inpname2 [AddOP1]\n\
         When extrapolating a new OP between OpA and OpB.\n\
         connection_src_op_output_names = [\n\
-            "OpA", "outnameA",\n\
-            "AddOP1", "inpname1",\n\
-            "OpC", "outnameC",\n\
-            "AddOP1", "inpname2",\n\
+            "OpA", "outnameA", "AddOP1", "inpname1",\n\
+            "OpC", "outnameC", "AddOP1", "inpname2",\n\
         ]\n\n\
         This need not be specified only when the type of the newly added OP is Constant.
 
-    connection_dist_op_input_names: List
+    connection_dest_op_input_names: List
         Specify the name of the input name from which to connect.\n\n\
         e.g.\n\
         -Before-\n\
@@ -108,9 +105,8 @@ def add(
             [OpA] outnameA - inpname1 [AddOP1] outname1 - inpnameB1 [OpB] outnameB\n\
             [OpC] outnameC - inpname2 [AddOP1]\n\
         When extrapolating a new OP between OpA and OpB.\n\
-        connection_dist_op_input_names = [\n\
-            "AddOP1", "outname1",\n\
-            "OpB", "inpnameB1",\n\
+        connection_dest_op_input_names = [\n\
+            "AddOP1", "outname1", "OpB", "inpnameB1",\n\
         ]
 
     add_op_type: str
@@ -216,36 +212,79 @@ def add(
         attributes=add_op_attributes,
         non_verbose=True,
     )
+    gs_single_op_graph = gs.import_onnx(single_op_graph)
+
     single_op_graph_node = None
     single_op_graph_node_inputs = None
     single_op_graph_node_outputs = None
-    single_op_graph_node = single_op_graph.nodes[0]
+    single_op_graph_node = gs_single_op_graph.nodes[0]
     if add_op_type not in ['Constant', 'ConstantOfShape']:
         single_op_graph_node_inputs = single_op_graph_node.inputs
     single_op_graph_node_outputs = single_op_graph_node.outputs
 
+    graph.nodes.append(single_op_graph_node)
+
     # Search for the output OPs of the connection source
-    src_ops = {}
+    src_ops = []
     for graph_node in graph.nodes:
-        if graph_node.name in connection_src_op_output_names:
-            src_ops[graph_node.name] = graph_node
+        for srcop_name, _, _, _ in connection_src_op_output_names:
+            if graph_node.name == srcop_name:
+                src_ops.append(graph_node)
 
-    # Search for the input OPs of the connection dist
-    dist_ops = {}
+    # Search for the input OPs of the connection dest
+    dest_ops = []
     for graph_node in graph.nodes:
-        if graph_node.name in connection_dist_op_input_names:
-            dist_ops[graph_node.name] = graph_node
+        for _, _, destop_name, _ in connection_dest_op_input_names:
+            if graph_node.name == destop_name:
+                dest_ops.append(graph_node)
 
-
-
-    ######################################################## WIP
-    # Rewrite the output of the connection Gen OP
+    # Rewrite the input of the connection Gen OP
     if single_op_graph_node_inputs:
-        pass
-    ######################################################## WIP
+        # [N*4] -> [N, 4]
+        connection_src_op_output_names = np.asarray(connection_src_op_output_names)
+        connection_src_op_output_names = connection_src_op_output_names.reshape(-1, 4)
+        for srcop_name, srcop_output_name, addop_name, addop_input_name in connection_src_op_output_names:
+            for srcop_graph_node in src_ops:
+                if srcop_graph_node.name == srcop_name:
+                    for srcop_graph_node_output in srcop_graph_node.outputs:
+                        if srcop_graph_node_output.name == srcop_output_name:
+                            for idxs, single_op_graph_node_input in enumerate(single_op_graph_node_inputs):
+                                if single_op_graph_node_input.name == addop_input_name:
+                                    single_op_graph_node.inputs[idxs] = srcop_graph_node_output
+                                    break
+                            else:
+                                continue
+                            break
+                    else:
+                        continue
+                    break
+            else:
+                continue
 
+    # Rewrite the input of the destination OP
+    if single_op_graph_node_outputs:
+        # [N*4] -> [N, 4]
+        connection_dest_op_input_names = np.asarray(connection_dest_op_input_names)
+        connection_dest_op_input_names = connection_dest_op_input_names.reshape(-1, 4)
+        for addop_name, addop_output_name, destop_name, destop_input_name in connection_dest_op_input_names:
+            for destop_graph_node in dest_ops:
+                if destop_graph_node.name == destop_name:
+                    for idxd, destop_graph_node_input in enumerate(destop_graph_node.inputs):
+                        if destop_graph_node_input.name == destop_input_name:
+                            for single_op_graph_node_output in single_op_graph_node_outputs:
+                                if single_op_graph_node_output.name == addop_output_name:
+                                    destop_graph_node.inputs[idxd] = single_op_graph_node_output
+                                    break
+                            else:
+                                continue
+                            break
+                    else:
+                        continue
+                    break
+            else:
+                continue
 
-
+    graph.cleanup().toposort()
 
     # Shape Estimation
     changed_graph = None
@@ -361,7 +400,7 @@ def main():
             'This need not be specified only when the type of the newly added OP is Constant.'
     )
     parser.add_argument(
-        '--connection_dist_op_input_names',
+        '--connection_dest_op_input_names',
         type=str,
         required=True,
         nargs=4,
@@ -376,7 +415,7 @@ def main():
             '[OpA] outnameA - inpname1 [AddOP1] outname1 - inpnameB1 [OpB] outnameB \n'+
             '[OpC] outnameC - inpname2 [AddOP1] \n'+
             'When extrapolating a new OP between OpA and OpB. \n'+
-            '--connection_dist_op_input_names AddOP1 outname1 OpB inpnameB1'
+            '--connection_dest_op_input_names AddOP1 outname1 OpB inpnameB1'
     )
     parser.add_argument(
         '--output_onnx_file_path',
@@ -407,14 +446,14 @@ def main():
     """
     connection_src_op_output_names = args.connection_src_op_output_names
 
-    # add dist op names
+    # add dest op names
     """
-    connection_dist_op_input_names = [
+    connection_dest_op_input_names = [
         'add_op_name', 'add_op_output_name',
-        'dist_op_name', 'dist_op_input_name',
+        'dest_op_name', 'dest_op_input_name',
     ]
     """
-    connection_dist_op_input_names = args.connection_dist_op_input_names
+    connection_dest_op_input_names = args.connection_dest_op_input_names
 
     # add op input variables
     """
@@ -489,7 +528,7 @@ def main():
         input_onnx_file_path=None,
         onnx_graph=onnx_graph,
         connection_src_op_output_names=connection_src_op_output_names,
-        connection_dist_op_input_names=connection_dist_op_input_names,
+        connection_dest_op_input_names=connection_dest_op_input_names,
         add_op_type=add_op_type,
         add_op_name=add_op_name,
         add_op_input_variables=input_variables_tmp,
