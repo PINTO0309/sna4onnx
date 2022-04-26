@@ -101,7 +101,7 @@ def add(
         e.g.\n\
         [OpA] outnameA - inpnameB [OpB] outnameB - inpnameC [OpC]\n\
         When extrapolating a new OP between OpA and OpB.\n\
-        --connection_src_op_name OpB
+        --connection_dist_op_name OpB
 
     connection_dist_op_input_name: str
         Specify the name of the input name from which to connect.\n\
