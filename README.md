@@ -92,7 +92,8 @@ optional arguments:
       attributes can be specified multiple times.
       --add_op_attributes name dtype value
       dtype is one of "float32" or "float64" or "int32" or "int64" or "str".
-      https://github.com/onnx/onnx/blob/main/docs/Operators.md e.g.
+      https://github.com/onnx/onnx/blob/main/docs/Operators.md
+      e.g.
       --add_op_attributes alpha float32 1.0
       --add_op_attributes beta float32 1.0
       --add_op_attributes transA int64 0
@@ -100,7 +101,6 @@ optional arguments:
 
   --connection_src_op_output_names SRCOP_NAME SRCOP_OUTPUT_NAME ADDOP_NAME ADDOP_INPUT_NAME
       Specify the name of the output name from which to connect.
-
       e.g.
       -Before-
         [OpA]oname1 - iname1[OpB]oname1
