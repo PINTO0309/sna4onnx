@@ -332,7 +332,7 @@ onnx_graph = add(
 ![20220426234631](https://user-images.githubusercontent.com/33194443/165336928-066542b7-89ad-4c51-9e10-6bb2e8e6344a.png)
 
 ### After
-![aaa](https://user-images.githubusercontent.com/33194443/165337249-eaf92683-c42b-44f8-acb5-8542bc9472c4.png)
+![image](https://user-images.githubusercontent.com/33194443/165440616-d9947caa-ba7d-4f83-9d97-d71be0d3a579.png)
 
 ## 7. Reference
 1. https://github.com/onnx/onnx/blob/main/docs/Operators.md
