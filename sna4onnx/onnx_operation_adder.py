@@ -5,6 +5,7 @@ import sys
 from argparse import ArgumentParser
 import onnx
 import onnx_graphsurgeon as gs
+from onnx_graphsurgeon.ir.tensor import Variable
 import numpy as np
 from typing import Optional, List
 import sog4onnx
@@ -283,6 +284,51 @@ def add(
                     break
             else:
                 continue
+
+    graph.cleanup().toposort()
+
+    # Add unconnected input and output variables to the input/output OP of a graph
+    graph_input_variables = []
+    graph_output_variables = []
+
+    # Extraction of input variables
+    for graph_node in graph.nodes:
+        try:
+            for input in graph_node.inputs:
+                if isinstance(input, Variable) and input not in graph.inputs:
+                    graph_input_variables.append(input)
+        except:
+            pass
+
+    # Extraction of output variables
+    for graph_node in graph.nodes:
+        try:
+            for output in graph_node.outputs:
+                if isinstance(output, Variable) and output not in graph.outputs:
+                    graph_output_variables.append(output)
+        except:
+            pass
+
+    graph_node_input_names = [
+        graph_node_input.name for graph_node in graph.nodes for graph_node_input in graph_node.inputs
+    ]
+    graph_node_output_names = [
+        graph_node_output.name for graph_node in graph.nodes for graph_node_output in graph_node.outputs
+    ]
+
+    # Extract unused input variables and assign them to graph inputs
+    for graph_input_variable in graph_input_variables:
+        if graph_input_variable.name in graph_node_output_names:
+            pass
+        else:
+            graph.inputs.append(graph_input_variable)
+
+    # Extract unused output variables and assign them to graph output
+    for graph_output_variable in graph_output_variables:
+        if graph_output_variable.name in graph_node_input_names:
+            pass
+        else:
+            graph.outputs.append(graph_output_variable)
 
     graph.cleanup().toposort()
 
