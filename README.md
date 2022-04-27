@@ -10,7 +10,7 @@ https://github.com/PINTO0309/simple-onnx-processing-tools
 - [x] Use a good combination with the ONNX merge tool **[snc4onnx](https://github.com/PINTO0309/snc4onnx)** while merging OP parts.
 - [x] Only one OP can be extrapolated at a time.
 - [x] After OP extrapolation, the entire model is checked, and even if there is a consistency problem, only a warning is displayed and the ONNX file is output as is.
-- [ ] Add unconnected input and output variables to the input/output OP of a graph.
+- [x] Add unconnected input and output variables to the input/output OP of a graph.
 
 ## 1. Setup
 ### 1-1. HostPC
