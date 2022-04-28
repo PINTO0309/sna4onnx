@@ -210,7 +210,11 @@ add(
         Specify input variables for the OP to be generated.
         See below for the variables that can be specified.
     
-        {"input_var_name1": [numpy.dtype, shape], "input_var_name2": [dtype, shape], ...}
+        {
+            "input_var_name1": [numpy.dtype, shape],
+            "input_var_name2": [dtype, shape],
+            ...
+        }
     
         e.g.
         add_op_input_variables = {
@@ -224,7 +228,10 @@ add(
         Specify output variables for the OP to be generated.
         See below for the variables that can be specified.
     
-        {"output_var_name1": [numpy.dtype, shape], "output_var_name2": [dtype, shape], ...}
+        {
+            "output_var_name1": [numpy.dtype, shape],
+            "output_var_name2": [dtype, shape], ...
+        }
     
         e.g.
         add_op_output_variables = {
@@ -238,9 +245,20 @@ add(
         Specify output add_op_attributes for the OP to be generated.
         See below for the add_op_attributes that can be specified.
     
-        {"attr_name1": value1, "attr_name2": value2, "attr_name3": value3, ...}
+        {
+            "attr_name1": value1,
+            "attr_name2": value2,
+            "attr_name3": value3,
+            ...
+        }
     
-        e.g. add_op_attributes = {"alpha": 1.0, "beta": 1.0, "transA": 0, "transB": 0}
+        e.g.
+        add_op_attributes = {
+            "alpha": 1.0,
+            "beta": 1.0,
+            "transA": 0,
+            "transB": 0,
+        }
         Default: None
         https://github.com/onnx/onnx/blob/main/docs/Operators.md
     
