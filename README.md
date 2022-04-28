@@ -212,7 +212,7 @@ add(
     
         {
             "input_var_name1": [numpy.dtype, shape],
-            "input_var_name2": [dtype, shape],
+            "input_var_name2": [numpy.dtype, shape],
             ...
         }
     
@@ -230,7 +230,8 @@ add(
     
         {
             "output_var_name1": [numpy.dtype, shape],
-            "output_var_name2": [dtype, shape], ...
+            "output_var_name2": [numpy.dtype, shape],
+            ...
         }
     
         e.g.
