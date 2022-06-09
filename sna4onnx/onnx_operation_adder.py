@@ -66,8 +66,8 @@ NUMPY_TYPES_TO_ONNX_DTYPES = {
 
 
 def add(
-    connection_src_op_output_names: List,
-    connection_dest_op_input_names: List,
+    connection_src_op_output_names: List[List[str]],
+    connection_dest_op_input_names: List[List[str]],
     add_op_type: str,
     add_op_name: str,
     add_op_input_variables: Optional[dict] = None,
@@ -92,8 +92,8 @@ def add(
             [OpC] outnameC - inpname2 [AddOP1]\n\
         When extrapolating a new OP between OpA and OpB.\n\
         connection_src_op_output_names = [\n\
-            "OpA", "outnameA", "AddOP1", "inpname1",\n\
-            "OpC", "outnameC", "AddOP1", "inpname2",\n\
+            ["OpA", "outnameA", "AddOP1", "inpname1"],\n\
+            ["OpC", "outnameC", "AddOP1", "inpname2"],\n\
         ]\n\n\
         This need not be specified only when the type of the newly added OP is Constant.
 
@@ -108,7 +108,7 @@ def add(
             [OpC] outnameC - inpname2 [AddOP1]\n\
         When extrapolating a new OP between OpA and OpB.\n\
         connection_dest_op_input_names = [\n\
-            "AddOP1", "outname1", "OpB", "inpnameB1",\n\
+            ["AddOP1", "outname1", "OpB", "inpnameB1"],\n\
         ]
 
     add_op_type: str
@@ -487,8 +487,8 @@ def main():
     # add src op names
     """
     connection_src_op_output_names = [
-        'src_op_name', 'src_op_output_name',
-        'add_op_name', 'add_op_input_name',
+        ['src_op_name', 'src_op_output_name',
+         'add_op_name', 'add_op_input_name'],
     ]
     """
     connection_src_op_output_names = args.connection_src_op_output_names
@@ -496,8 +496,8 @@ def main():
     # add dest op names
     """
     connection_dest_op_input_names = [
-        'add_op_name', 'add_op_output_name',
-        'dest_op_name', 'dest_op_input_name',
+        ['add_op_name', 'add_op_output_name',
+         'dest_op_name', 'dest_op_input_name'],
     ]
     """
     connection_dest_op_input_names = args.connection_dest_op_input_names
