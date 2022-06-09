@@ -167,8 +167,8 @@ add(
             [OpC] outnameC - inpname2 [AddOP1]
         When extrapolating a new OP between OpA and OpB.
         connection_src_op_output_names = [
-            "OpA", "outnameA", "AddOP1", "inpname1",
-            "OpC", "outnameC", "AddOP1", "inpname2",
+            ["OpA", "outnameA", "AddOP1", "inpname1",],
+            ["OpC", "outnameC", "AddOP1", "inpname2",],
         ]
     
         This need not be specified only when the type of the newly added OP is Constant.
@@ -185,7 +185,7 @@ add(
             [OpC] outnameC - inpname2 [AddOP1]
         When extrapolating a new OP between OpA and OpB.
         connection_dest_op_input_names = [
-            "AddOP1", "outname1", "OpB", "inpnameB1",
+            ["AddOP1", "outname1", "OpB", "inpnameB1"],
         ]
     
     add_op_type: str
@@ -301,11 +301,11 @@ from sna4onnx import add
 
 onnx_graph = add(
   input_onnx_file_path="crestereo_init_iter2_120x160.onnx",
-  connection_src_op_output_name=[
-    "Sub_451", "onnx::Pow_603", "dummy_mul", "inp1"
+  connection_src_op_output_names=[
+    ["Sub_451", "onnx::Pow_603", "dummy_mul", "inp1"],
   ],
-  connection_dest_op_input_name=[
-    "dummy_mul","out1", "Div_458", "onnx::Pow_603"
+  connection_dest_op_input_names=[
+    ["dummy_mul","out1", "Div_458", "onnx::Pow_603"],
   ],
   add_op_type="Mul",
   add_op_name="dummy_mul",
@@ -314,7 +314,7 @@ onnx_graph = add(
     "inp2_const": [np.float32, [1]],
   },
   add_op_output_variables={
-    "out1": [np.float32, [1,70,256],
+    "out1": [np.float32, [1,70,256]],
   },
 )
 
@@ -322,11 +322,11 @@ onnx_graph = add(
 
 onnx_graph = add(
   onnx_graph=graph,
-  connection_src_op_output_name=[
-    "Sub_451", "onnx::Pow_603", "dummy_mul", "inp1"
+  connection_src_op_output_names=[
+    ["Sub_451", "onnx::Pow_603", "dummy_mul", "inp1"],
   ],
-  connection_dest_op_input_name=[
-    "dummy_mul","out1", "Div_458", "onnx::Pow_603"
+  connection_dest_op_input_names=[
+    ["dummy_mul","out1", "Div_458", "onnx::Pow_603"],
   ],
   add_op_type="Mul",
   add_op_name="dummy_mul",
@@ -335,7 +335,7 @@ onnx_graph = add(
     "inp2_const": [np.float32, [1]],
   },
   add_op_output_variables={
-    "out1": [np.float32, [1,70,256],
+    "out1": [np.float32, [1,70,256]],
   },
 )
 ```
