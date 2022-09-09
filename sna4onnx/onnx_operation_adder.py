@@ -360,6 +360,7 @@ def add(
 def main():
     parser = ArgumentParser()
     parser.add_argument(
+        '-if',
         '--input_onnx_file_path',
         type=str,
         required=True,
@@ -367,6 +368,7 @@ def main():
     )
     # https://github.com/onnx/onnx/blob/main/docs/Operators.md
     parser.add_argument(
+        '-aot',
         '--add_op_type',
         type=str,
         required=True,
@@ -376,6 +378,7 @@ def main():
             'https://github.com/onnx/onnx/blob/main/docs/Operators.md'
     )
     parser.add_argument(
+        '-aon',
         '--add_op_name',
         type=str,
         required=True,
@@ -385,6 +388,7 @@ def main():
             'e.g. --add_op_name AddOP1'
     )
     parser.add_argument(
+        '-aoiv',
         '--add_op_input_variables',
         type=str,
         nargs=3,
@@ -399,6 +403,7 @@ def main():
             '--add_op_input_variables inpname3 float64 [1,3,224,224]'
     )
     parser.add_argument(
+        '-aoov',
         '--add_op_output_variables',
         type=str,
         nargs=3,
@@ -413,6 +418,7 @@ def main():
             '--add_op_output_variables outname3 float64 [1,3,224,224]'
     )
     parser.add_argument(
+        '-aoa',
         '--add_op_attributes',
         nargs=3,
         action='append',
@@ -428,6 +434,7 @@ def main():
             '--add_op_attributes transB int64 0'
     )
     parser.add_argument(
+        '-csoon',
         '--connection_src_op_output_names',
         type=str,
         nargs=4,
@@ -447,6 +454,7 @@ def main():
             'This need not be specified only when the type of the newly added OP is Constant.'
     )
     parser.add_argument(
+        '-cdoin',
         '--connection_dest_op_input_names',
         type=str,
         required=True,
@@ -465,6 +473,7 @@ def main():
             '--connection_dest_op_input_names AddOP1 outname1 OpB inpnameB1'
     )
     parser.add_argument(
+        '-of',
         '--output_onnx_file_path',
         type=str,
         default='',
@@ -475,6 +484,7 @@ def main():
             'e.g. aaa.onnx -> aaa_mod.onnx'
     )
     parser.add_argument(
+        '-n',
         '--non_verbose',
         action='store_true',
         help='Do not show all information logs. Only error logs are displayed.'
@@ -487,8 +497,10 @@ def main():
     # add src op names
     """
     connection_src_op_output_names = [
-        ['src_op_name', 'src_op_output_name',
-         'add_op_name', 'add_op_input_name'],
+        [
+            'src_op_name', 'src_op_output_name',
+            'add_op_name', 'add_op_input_name',
+        ],
     ]
     """
     connection_src_op_output_names = args.connection_src_op_output_names
@@ -496,8 +508,10 @@ def main():
     # add dest op names
     """
     connection_dest_op_input_names = [
-        ['add_op_name', 'add_op_output_name',
-         'dest_op_name', 'dest_op_input_name'],
+        [
+            'add_op_name', 'add_op_output_name',
+            'dest_op_name', 'dest_op_input_name',
+        ],
     ]
     """
     connection_dest_op_input_names = args.connection_dest_op_input_names

@@ -32,39 +32,39 @@ $ pip install -U onnx \
 https://github.com/PINTO0309/simple-onnx-processing-tools#docker
 
 ## 2. CLI Usage
-```bash
+```
 $ sna4onnx -h
 
 usage:
   sna4onnx [-h]
-  --input_onnx_file_path INPUT_ONNX_FILE_PATH
-  --add_op_type ADD_OP_TYPE
-  --add_op_name ADD_OP_NAME
-  [--add_op_input_variables NAME TYPE VALUE]
-  [--add_op_output_variables NAME TYPE VALUE]
-  [--add_op_attributes NAME DTYPE VALUE]
-  [--connection_src_op_output_names SRCOP_NAME SRCOP_OUTPUT_NAME ADDOP_NAME ADDOP_INPUT_NAME]
-  --connection_dest_op_input_names ADDOP_NAME ADDOP_OUTPUT_NAME DESTOP_NAME DESTOP_INPUT_NAME
-  [--output_onnx_file_path OUTPUT_ONNX_FILE_PATH]
-  [--non_verbose]
+  -if INPUT_ONNX_FILE_PATH
+  -aot ADD_OP_TYPE
+  -aon ADD_OP_NAME
+  [-aoiv NAME TYPE VALUE]
+  [-aoov NAME TYPE VALUE]
+  [-aoa NAME DTYPE VALUE]
+  [-csoon SRCOP_NAME SRCOP_OUTPUT_NAME ADDOP_NAME ADDOP_INPUT_NAME]
+  -cdoin ADDOP_NAME ADDOP_OUTPUT_NAME DESTOP_NAME DESTOP_INPUT_NAME
+  [-of OUTPUT_ONNX_FILE_PATH]
+  [-n]
 
 optional arguments:
   -h, --help
       show this help message and exit
 
-  --input_onnx_file_path INPUT_ONNX_FILE_PATH
+  -if INPUT_ONNX_FILE_PATH, --input_onnx_file_path INPUT_ONNX_FILE_PATH
       Input onnx file path.
 
-  --add_op_type ADD_OP_TYPE
+  -aot ADD_OP_TYPE, --add_op_type ADD_OP_TYPE
       ONNX OP type.
       https://github.com/onnx/onnx/blob/main/docs/Operators.md
 
-  --add_op_name ADD_OP_NAME
+  -aon ADD_OP_NAME, --add_op_name ADD_OP_NAME
       Name of OP to be added.
       e.g.
       --add_op_name AddOP1
 
-  --add_op_input_variables NAME TYPE VALUE
+  -aoiv ADD_OP_INPUT_VARIABLES ADD_OP_INPUT_VARIABLES ADD_OP_INPUT_VARIABLES, --add_op_input_variables ADD_OP_INPUT_VARIABLES ADD_OP_INPUT_VARIABLES ADD_OP_INPUT_VARIABLES
       input_variables can be specified multiple times.
       --add_op_input_variables variable_name numpy.dtype shape
       https://github.com/onnx/onnx/blob/main/docs/Operators.md
@@ -73,7 +73,7 @@ optional arguments:
       --add_op_input_variables inpname2 int32 [1]
       --add_op_input_variables inpname3 float64 [1,3,224,224]
 
-  --add_op_output_variables NAME TYPE VALUE
+  -aoov ADD_OP_OUTPUT_VARIABLES ADD_OP_OUTPUT_VARIABLES ADD_OP_OUTPUT_VARIABLES, --add_op_output_variables ADD_OP_OUTPUT_VARIABLES ADD_OP_OUTPUT_VARIABLES ADD_OP_OUTPUT_VARIABLES
       output_variables can be specified multiple times.
       --add_op_output_variables variable_name numpy.dtype shape
       https://github.com/onnx/onnx/blob/main/docs/Operators.md
@@ -82,7 +82,7 @@ optional arguments:
       --add_op_output_variables outname2 int32 [1]
       --add_op_output_variables outname3 float64 [1,3,224,224]
 
-  --add_op_attributes NAME DTYPE VALUE
+  -aoa ADD_OP_ATTRIBUTES ADD_OP_ATTRIBUTES ADD_OP_ATTRIBUTES, --add_op_attributes ADD_OP_ATTRIBUTES ADD_OP_ATTRIBUTES ADD_OP_ATTRIBUTES
       attributes can be specified multiple times.
       --add_op_attributes name dtype value
       dtype is one of "float32" or "float64" or "int32" or "int64" or "str".
@@ -93,7 +93,7 @@ optional arguments:
       --add_op_attributes transA int64 0
       --add_op_attributes transB int64 0
 
-  --connection_src_op_output_names SRCOP_NAME SRCOP_OUTPUT_NAME ADDOP_NAME ADDOP_INPUT_NAME
+  -csoon CONNECTION_SRC_OP_OUTPUT_NAMES CONNECTION_SRC_OP_OUTPUT_NAMES CONNECTION_SRC_OP_OUTPUT_NAMES CONNECTION_SRC_OP_OUTPUT_NAMES, --connection_src_op_output_names CONNECTION_SRC_OP_OUTPUT_NAMES CONNECTION_SRC_OP_OUTPUT_NAMES CONNECTION_SRC_OP_OUTPUT_NAMES CONNECTION_SRC_OP_OUTPUT_NAMES
       Specify the name of the output name from which to connect.
       e.g.
       -Before-
@@ -109,7 +109,7 @@ optional arguments:
       --connection_src_op_output_names OpC oname1 AddOP1 iname2
       This need not be specified only when the type of the newly added OP is Constant.
 
-  --connection_dest_op_input_names ADDOP_NAME ADDOP_OUTPUT_NAME DESTOP_NAME DESTOP_INPUT_NAME
+  -cdoin CONNECTION_DEST_OP_INPUT_NAMES CONNECTION_DEST_OP_INPUT_NAMES CONNECTION_DEST_OP_INPUT_NAMES CONNECTION_DEST_OP_INPUT_NAMES, --connection_dest_op_input_names CONNECTION_DEST_OP_INPUT_NAMES CONNECTION_DEST_OP_INPUT_NAMES CONNECTION_DEST_OP_INPUT_NAMES CONNECTION_DEST_OP_INPUT_NAMES
       Specify the name of the input name from which to connect.
       e.g.
       -Before-
@@ -123,13 +123,13 @@ optional arguments:
       When extrapolating a new OP between OpA and OpB.
       --connection_dest_op_input_names AddOP1 oname1 OpB iname1
 
-  --output_onnx_file_path OUTPUT_ONNX_FILE_PATH
+  -of OUTPUT_ONNX_FILE_PATH, --output_onnx_file_path OUTPUT_ONNX_FILE_PATH
       Output onnx file path.
       If not specified, a file with "_mod" appended to the end of input_onnx_file_path is output.
       e.g.
       aaa.onnx -> aaa_mod.onnx
 
-  --non_verbose
+  -n, --non_verbose
       Do not show all information logs. Only error logs are displayed.
 ```
 
@@ -157,7 +157,7 @@ add(
     ----------
     connection_src_op_output_names: List
         Specify the name of the output name from which to connect.
-    
+
         e.g.
         -Before-
             [OpA] outnameA - inpnameB1 [OpB] outnameB
@@ -170,12 +170,12 @@ add(
             ["OpA", "outnameA", "AddOP1", "inpname1",],
             ["OpC", "outnameC", "AddOP1", "inpname2",],
         ]
-    
+
         This need not be specified only when the type of the newly added OP is Constant.
-    
+
     connection_dest_op_input_names: List
         Specify the name of the input name from which to connect.
-    
+
         e.g.
         -Before-
             [OpA] outnameA - inpnameB1 [OpB] outnameB
@@ -187,29 +187,29 @@ add(
         connection_dest_op_input_names = [
             ["AddOP1", "outname1", "OpB", "inpnameB1"],
         ]
-    
+
     add_op_type: str
         ONNX op type.
         See below for the types of OPs that can be specified.
-    
+
         e.g. "Add", "Div", "Gemm", ...
         https://github.com/onnx/onnx/blob/main/docs/Operators.md
-    
+
     add_op_name: str
         Name of OP to be added.
-    
+
         e.g. --add_op_name AddOP1
-    
+
     add_op_input_variables: Optional[dict]
         Specify input variables for the OP to be generated.
         See below for the variables that can be specified.
-    
+
         {
             "input_var_name1": [numpy.dtype, shape],
             "input_var_name2": [numpy.dtype, shape],
             ...
         }
-    
+
         e.g.
         add_op_input_variables = {
             "inpname1": [np.float32, [1,224,224,3]],
@@ -217,17 +217,17 @@ add(
             ...
         }
         https://github.com/onnx/onnx/blob/main/docs/Operators.md
-    
+
     add_op_output_variables: Optional[dict]
         Specify output variables for the OP to be generated.
         See below for the variables that can be specified.
-    
+
         {
             "output_var_name1": [numpy.dtype, shape],
             "output_var_name2": [numpy.dtype, shape],
             ...
         }
-    
+
         e.g.
         add_op_output_variables = {
             "outname1": [np.float32, [1,224,224,3]],
@@ -235,18 +235,18 @@ add(
             ...
         }
         https://github.com/onnx/onnx/blob/main/docs/Operators.md
-    
+
     add_op_attributes: Optional[dict]
         Specify output add_op_attributes for the OP to be generated.
         See below for the add_op_attributes that can be specified.
-    
+
         {
             "attr_name1": value1,
             "attr_name2": value2,
             "attr_name3": value3,
             ...
         }
-    
+
         e.g.
         add_op_attributes = {
             "alpha": 1.0,
@@ -256,25 +256,25 @@ add(
         }
         Default: None
         https://github.com/onnx/onnx/blob/main/docs/Operators.md
-    
+
     input_onnx_file_path: Optional[str]
         Input onnx file path.
         Either input_onnx_file_path or onnx_graph must be specified.
         Default: ''
-    
+
     onnx_graph: Optional[onnx.ModelProto]
         onnx.ModelProto.
         Either input_onnx_file_path or onnx_graph must be specified.
         onnx_graph If specified, ignore input_onnx_file_path and process onnx_graph.
-    
+
     output_onnx_file_path: Optional[str]
         Output onnx file path. If not specified, no ONNX file is output.
         Default: ''
-    
+
     non_verbose: Optional[bool]
         Do not show all information logs. Only error logs are displayed.
         Default: False
-    
+
     Returns
     -------
     changed_graph: onnx.ModelProto
